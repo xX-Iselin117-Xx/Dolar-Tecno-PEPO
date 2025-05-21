@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+  
+  body {
+    background: linear-gradient(to bottom, #f1f1f1, #949393);
+    padding: 90px;
+    height: 607px;
+  }
+  
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .fecha {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .logo-icon {
+    font-size: 32px;
+    color: white;
+    background: #00b34c;
+    padding: 10px;
+    border-radius: 50%;
+  }
+  
+  h1 {
+    font-size: 36px;
+  }
+  
+  .verde {
+    color: #00b34c;
+  }
+  
+  main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  }
+
+  h2 {
+    font-size: 22px;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
+  }
+  .h21 {
+    font-size: 20px;
+  }
+  
+  .tarjeta {
+    background: white;
+    border-radius: 10px;
+    padding: 60px;
+    width: 250px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  
+  .doble {
+    width: 300px;
+  }
+  
+  .subtitulo {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  .precio {
+    font-size: 28px;
+    color: #00b34c;
+    font-weight: bold;
+  }
+  
+  .variacion {
+    font-size: 16px;
+    margin-top: 5px;
+  }
+  
+  .fila {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .fila-izquierda {
+    display: flex;
+    gap: 20px;
+  }
+
+  .columna-izquierda {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .columna-derecha {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-left: 20px;
+    justify-content: flex-start;
+  }
+  
+  .tarjeta-chica {
+    width: 250px;
+    padding: 15px;
+  }
+  
+.variacion {
+  font-size: 0.9em;
+  display: block;
+  margin-top: 4px;
+}
+
+.variacion.verde {
+  color: green;
+}
+
+.variacion.rojo {
+  color: red;
+}
+
+  
