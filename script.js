@@ -1,9 +1,6 @@
 async function cargarDolares() {
   try {
     const hoy = new Date();
-    const ayer = new Date(hoy);
-    ayer.setDate(hoy.getDate() - 1);
-
     const fechaFormateada = hoy.toLocaleString("es-AR", {
       day: "2-digit",
       month: "2-digit",
@@ -15,46 +12,44 @@ async function cargarDolares() {
 
     document.querySelector(".fecha strong").textContent = fechaFormateada;
 
+    const hoyRes = await fetch("https://dolarapi.com/v1/dolares");
+    const hoyData = await hoyRes.json();
+
+    // Obtener datos previos del localStorage
+    const datosPrevios = JSON.parse(localStorage.getItem("datosPrevios")) || [];
+
+    // Guardar los datos de hoy para la próxima vez
+    localStorage.setItem("datosPrevios", JSON.stringify(hoyData));
+
     const tipos = [
-      { nombre: "oficial", id: "oficial" },
-      { nombre: "blue", id: "blue" },
-      { nombre: "bolsa", id: "mep" },
-      { nombre: "contadoconliqui", id: "ccl" },
+      { nombre: "Oficial", id: "oficial" },
+      { nombre: "Blue", id: "blue" },
+      { nombre: "Bolsa", id: "mep" },
+      { nombre: "Contado con liquidación", id: "ccl" },
     ];
 
-    const ayerFecha = ayer.toISOString().split("T")[0];
+    tipos.forEach(tipo => {
+      const actual = hoyData.find(d => d.nombre === tipo.nombre);
+      const anterior = datosPrevios.find(d => d.nombre === tipo.nombre);
 
-    for (const tipo of tipos) {
-      // Obtener precio actual
-      const hoyRes = await fetch(`https://dolarapi.com/v1/dolares/${tipo.nombre}`);
-      const hoyData = await hoyRes.json();
+      if (actual) {
+        document.getElementById(`${tipo.id}-compra`).textContent = `$${actual.compra}`;
+        document.getElementById(`${tipo.id}-venta`).textContent = `$${actual.venta}`;
 
-      // Obtener precio del día anterior
-      let ayerData = null;
-      try {
-        const ayerRes = await fetch(`https://dolarapi.com/v1/dolares/${tipo.nombre}/historico/${ayerFecha}`);
-        if (ayerRes.ok) {
-          ayerData = await ayerRes.json();
+        // Mostrar variación si hay datos previos
+        if (anterior) {
+          const compraVar = calcularVariacion(actual.compra, anterior.compra);
+          const ventaVar = calcularVariacion(actual.venta, anterior.venta);
+
+          agregarVariacion(`${tipo.id}-compra`, compraVar);
+          agregarVariacion(`${tipo.id}-venta`, ventaVar);
+        } else {
+          // Mensaje si no hay datos previos
+          agregarMensajeSinDatos(`${tipo.id}-compra`);
+          agregarMensajeSinDatos(`${tipo.id}-venta`);
         }
-      } catch (err) {
-        console.warn(`No se pudo obtener histórico de ${tipo.nombre}`);
       }
-
-      // Mostrar precio actual
-      document.getElementById(`${tipo.id}-compra`).textContent = `$${hoyData.compra}`;
-      document.getElementById(`${tipo.id}-venta`).textContent = `$${hoyData.venta}`;
-
-      // Mostrar variación
-      if (ayerData) {
-        const compraVar = calcularVariacion(hoyData.compra, ayerData.compra);
-        const ventaVar = calcularVariacion(hoyData.venta, ayerData.venta);
-        agregarVariacion(`${tipo.id}-compra`, compraVar);
-        agregarVariacion(`${tipo.id}-venta`, ventaVar);
-      } else {
-        agregarMensajeSinDatos(`${tipo.id}-compra`);
-        agregarMensajeSinDatos(`${tipo.id}-venta`);
-      }
-    }
+    });
   } catch (error) {
     console.error("Error al obtener los datos:", error);
   }
@@ -71,7 +66,7 @@ function agregarVariacion(id, variacion) {
   span.textContent = `${variacion > 0 ? "▲" : "▼"} ${Math.abs(variacion)}%`;
   span.style.color = variacion > 0 ? "red" : "green";
   span.style.display = "block";
-  span.style.fontSize = "0.9em";
+  span.style.fontSize = "0.5em";
   el.appendChild(span);
 }
 
@@ -80,13 +75,14 @@ function agregarMensajeSinDatos(id) {
   const span = document.createElement("span");
   span.textContent = "Sin datos previos";
   span.style.color = "gray";
-  span.style.display = "block";           // debajo del precio
-  span.style.fontSize = "0.33em";         // texto más pequeño
-  span.style.whiteSpace = "nowrap";       // evita salto de línea
+  span.style.fontSize = "0.3em";
+  span.style.display = "block";
+  span.style.whiteSpace = "nowrap";
   span.style.overflow = "hidden";
-  span.style.textOverflow = "ellipsis";   // recorta si es demasiado largo
+  span.style.textOverflow = "ellipsis";
   el.appendChild(span);
 }
 
+// Ejecuta la función al cargar y cada 30 minutos
 cargarDolares();
-setInterval(cargarDolares, 21600000); // cada 6
+setInterval(cargarDolares, 1800000);
