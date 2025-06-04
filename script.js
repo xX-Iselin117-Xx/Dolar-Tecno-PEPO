@@ -15,11 +15,10 @@ async function cargarDolares() {
     const hoyRes = await fetch("https://dolarapi.com/v1/dolares");
     const hoyData = await hoyRes.json();
 
-    // Obtener datos previos del localStorage
-    const datosPrevios = JSON.parse(localStorage.getItem("datosPrevios")) || [];
-
-    // Guardar los datos de hoy para la próxima vez
-    localStorage.setItem("datosPrevios", JSON.stringify(hoyData));
+    const hoyISO = hoy.toISOString().split("T")[0]; // YYYY-MM-DD
+    const datosGuardados = JSON.parse(localStorage.getItem("datosPrevios")) || {};
+    const fechaGuardada = datosGuardados.fecha;
+    const valoresGuardados = datosGuardados.valores || [];
 
     const tipos = [
       { nombre: "Oficial", id: "oficial" },
@@ -30,26 +29,33 @@ async function cargarDolares() {
 
     tipos.forEach(tipo => {
       const actual = hoyData.find(d => d.nombre === tipo.nombre);
-      const anterior = datosPrevios.find(d => d.nombre === tipo.nombre);
+      const anterior = valoresGuardados.find(d => d.nombre === tipo.nombre);
 
       if (actual) {
         document.getElementById(`${tipo.id}-compra`).textContent = `$${actual.compra}`;
         document.getElementById(`${tipo.id}-venta`).textContent = `$${actual.venta}`;
 
-        // Mostrar variación si hay datos previos
         if (anterior) {
           const compraVar = calcularVariacion(actual.compra, anterior.compra);
           const ventaVar = calcularVariacion(actual.venta, anterior.venta);
-
           agregarVariacion(`${tipo.id}-compra`, compraVar);
           agregarVariacion(`${tipo.id}-venta`, ventaVar);
-        } else {
-          // Mensaje si no hay datos previos
+        } 
+        else {
           agregarMensajeSinDatos(`${tipo.id}-compra`);
           agregarMensajeSinDatos(`${tipo.id}-venta`);
         }
       }
     });
+
+    // Solo guarda los datos si la fecha cambió (es un nuevo día)
+    if (fechaGuardada !== hoyISO) {
+      localStorage.setItem("datosPrevios", JSON.stringify({
+        fecha: hoyISO,
+        valores: hoyData
+      }));
+    }
+
   } catch (error) {
     console.error("Error al obtener los datos:", error);
   }
@@ -63,8 +69,15 @@ function calcularVariacion(actual, anterior) {
 function agregarVariacion(id, variacion) {
   const el = document.getElementById(id);
   const span = document.createElement("span");
-  span.textContent = `${variacion > 0 ? "▲" : "▼"} ${Math.abs(variacion)}%`;
-  span.style.color = variacion > 0 ? "red" : "green";
+
+  if (variacion === 0) {
+    span.textContent = "= 0%";
+    span.style.color = "#00BFFF"; 
+  } else {
+    span.textContent = `${variacion > 0 ? "▲" : "▼"} ${Math.abs(variacion)}%`;
+    span.style.color = variacion > 0 ? "red" : "green";
+  }
+
   span.style.display = "block";
   span.style.fontSize = "0.5em";
   el.appendChild(span);
